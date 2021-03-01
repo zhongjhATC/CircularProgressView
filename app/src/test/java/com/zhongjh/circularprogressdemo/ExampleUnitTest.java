@@ -1,4 +1,4 @@
-package com.zhongjh.circularprogressview;
+package com.zhongjh.circularprogressdemo;
 
 import org.junit.Test;
 
