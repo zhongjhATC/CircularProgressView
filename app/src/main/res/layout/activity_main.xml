@@ -7,8 +7,9 @@
     tools:context=".MainActivity">
 
     <com.zhongjh.circularprogressview.CircularProgress
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:id="@+id/circularProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

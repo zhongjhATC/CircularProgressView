@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.util.DisplayMetrics;
 import android.view.View;
 
 /**
@@ -11,10 +12,11 @@ import android.view.View;
  */
 public class OuterRingProgress extends View {
 
-    private CircularProgress mCircularProgress;
+    private final CircularProgress mCircularProgress;
+    public int mPix = 0; // 取出当前最大正方形数值
     private Paint mPaint;
     RectF mRect;
-    float mStartAngle;
+    float mStartAngle = -90;
     float mSweepAngle;
 
     public OuterRingProgress(Context context, CircularProgress circularProgress) {
@@ -44,8 +46,18 @@ public class OuterRingProgress extends View {
     }
 
     private void init() {
+        initPix();
         initPaint();
         initRect();
+    }
+
+    private void initPix() {
+        DisplayMetrics metrics = getContext().getResources()
+                .getDisplayMetrics();
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
+        float scarea = width * height;
+        mPix = (int) Math.sqrt(scarea * 0.0217);
     }
 
     /**
@@ -63,10 +75,10 @@ public class OuterRingProgress extends View {
      * 初始化矩阵
      */
     private void initRect() {
-        float startx = (float) (mCircularProgress.mPix * 0.05);
-        float endx = (float) (mCircularProgress.mPix * 0.95);
-        float starty = (float) (mCircularProgress.mPix * 0.05);
-        float endy = (float) (mCircularProgress.mPix * 0.95);
+        float startx = (float) (mPix * 0.05);
+        float endx = (float) (mPix * 0.95);
+        float starty = (float) (mPix * 0.05);
+        float endy = (float) (mPix * 0.95);
         mRect = new RectF(startx, starty, endx, endy);
     }
 
@@ -80,8 +92,8 @@ public class OuterRingProgress extends View {
      */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int desiredWidth = mCircularProgress.mPix;
-        int desiredHeight = mCircularProgress.mPix;
+        int desiredWidth = mPix;
+        int desiredHeight = mPix;
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);

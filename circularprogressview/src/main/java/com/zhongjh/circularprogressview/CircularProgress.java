@@ -22,6 +22,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 public class CircularProgress extends FrameLayout implements View.OnClickListener {
@@ -36,7 +37,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     private ImageView mFillCircleImage; // 填充的圆形图片控件
     private ImageView mArcImage; // 弧形，用于进度显示控件
     private ImageView mPlayImage; // 播放图片控件
-    private OuterRingProgress mOuterRingProgress; // 第二次进度的控件
+    private CusImage mOuterRingProgress; // 第二次进度的控件
 
     private Drawable mDrawablePlay; // 播放图片
     private Drawable mDrawableStop; // 暂停图片
@@ -49,28 +50,48 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     private ScaleAnimation new_scale_in, scale_in, scale_out;
     private AlphaAnimation fade_in, fade_out;
 
+    private CircularProgressListener mCircularProgressListener; // 事件
+
 
     public CircularProgress(@NonNull Context context) {
         super(context);
-        setOnClickListener(this);
+        initAll();
     }
 
     public CircularProgress(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        setOnClickListener(this);
-        displayMetrics();
-        initialise();
-        initPaint();
-        init();
+        initAll();
     }
 
     public CircularProgress(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        initAll();
+    }
+
+    /**
+     * 赋值事件
+     */
+    public void setCircularProgressListener(CircularProgressListener circularProgressListener) {
+        mCircularProgressListener = circularProgressListener;
+    }
+
+    /**
+     * 设置进度值
+     */
+    public void setProgress(Integer progress) {
+        mOuterRingProgress.setProgress(progress);
+    }
+
+    /**
+     * 初始化所有
+     */
+    private void initAll() {
         setOnClickListener(this);
         displayMetrics();
         initialise();
         initPaint();
         initAnimation();
+        initAnimationListener();
         init();
     }
 
@@ -83,11 +104,13 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         mFillCircleImage = new ImageView(getContext());
         mArcImage = new ImageView(getContext());
         mPlayImage = new ImageView(getContext());
+        mOuterRingProgress = new CusImage(getContext(), this);
 
         mFullCircleImage.setClickable(false);
         mFillCircleImage.setClickable(false);
         mArcImage.setClickable(false);
         mPlayImage.setClickable(false);
+        mOuterRingProgress.setClickable(false);
     }
 
     /**
@@ -191,7 +214,9 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
                 // 隐藏进度圈，显示第二个进度圈
                 mArcImage.setVisibility(View.GONE);
                 mFullCircleImage.setVisibility(View.VISIBLE);
-//                cusview.setVisibility(View.VISIBLE);
+                mOuterRingProgress.setVisibility(View.VISIBLE);
+
+                mCircularProgressListener.onStart();
             }
 
             @Override
@@ -240,6 +265,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         addView(mFillCircleImage, lp);
         addView(mArcImage, lp);
         addView(mPlayImage, lp);
+        addView(mOuterRingProgress, lp);
         mFillCircleImage.setVisibility(View.GONE); // 初始化的填满圆形是隐藏的
     }
 
@@ -299,7 +325,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     /**
      * 初始化暂停图片
      */
-    private void initDrawableStop(){
+    private void initDrawableStop() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             mDrawableStop = getContext().getDrawable(R.drawable.ic_baseline_stop_24);
         } else {
@@ -325,5 +351,6 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
             mArcImage.startAnimation(arcRotation);
         }
     }
+
 
 }
