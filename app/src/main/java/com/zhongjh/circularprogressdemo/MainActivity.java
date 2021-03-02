@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -12,28 +14,49 @@ import com.zhongjh.circularprogressview.CircularProgressListener;
 
 public class MainActivity extends AppCompatActivity {
 
-    static CircularProgress mCircularProgress;
+    CircularProgress mCircularProgress;
+    DownLoadSigTask downLoadSigTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        findViewById(R.id.button).setOnClickListener(v -> {
+            downLoadSigTask.cancel(true);
+            mCircularProgress.reset();
+        });
 
         mCircularProgress = (CircularProgress) findViewById(R.id.circularProgress);
-        mCircularProgress.setCircularProgressListener(() -> {
-            runOnUiThread(() -> {
-                // TODO Auto-generated method stub
-                Toast.makeText(MainActivity.this,
-                        "Starting download", Toast.LENGTH_SHORT)
-                        .show();
-            });
-            new DownLoadSigTask().execute();
+        mCircularProgress.setCircularProgressListener(new CircularProgressListener() {
+            @Override
+            public void onStart() {
+                Log.d(CircularProgress.TAG, "onStart");
+                downLoadSigTask = new DownLoadSigTask();
+                downLoadSigTask.execute();
+            }
+
+            @Override
+            public void onDone() {
+
+            }
+
+            @Override
+            public void onStop() {
+                // 这里写停止当前线程的操作
+                downLoadSigTask.cancel(true);
+                // 要自己告诉mCircularProgress重置，因为不知道自己停止当前线程要消耗多少时间
+                mCircularProgress.reset();
+            }
+
         });
     }
 
 
-    static class DownLoadSigTask extends AsyncTask<String, Integer, String> {
+    /**
+     * 模拟的一个消耗时间任务
+     */
+    class DownLoadSigTask extends AsyncTask<String, Integer, String> {
 
 
         @Override
@@ -48,6 +71,9 @@ public class MainActivity extends AppCompatActivity {
             //Creating dummy task and updating progress
 
             for (int i = 0; i <= 100; i++) {
+                if (isCancelled()) {
+                    break;
+                }
                 try {
                     Thread.sleep(50);
 
@@ -70,8 +96,8 @@ public class MainActivity extends AppCompatActivity {
             // publishing progress to progress arc
 
             mCircularProgress.setProgress(progress[0]);
+            Log.d(CircularProgress.TAG, "progress" + progress[0]);
         }
-
 
 
     }

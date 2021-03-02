@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 播放 -->
+    <item
+        android:id="@+id/play"
+        android:drawable="@drawable/ic_baseline_play_arrow_24"
+        android:state_checked="true"/>
+
+    <!-- 暂停 -->
+    <item
+        android:id="@+id/stop"
+        android:drawable="@drawable/ic_baseline_stop_24"/>
+
+    <!-- 播放到暂停的动画 -->
+    <transition
+        android:drawable="@drawable/avd_play_to_stop"
+        android:fromId="@id/play"
+        android:toId="@id/stop"/>
+
+    <!-- 暂停到播放的动画 -->
+    <transition
+        android:drawable="@drawable/avd_stop_to_play"
+        android:fromId="@id/stop"
+        android:toId="@id/play"/>
+
+</animated-selector>

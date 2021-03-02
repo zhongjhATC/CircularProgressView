@@ -4,7 +4,13 @@
     android:tint="@android:color/white"
     android:viewportWidth="24"
     android:viewportHeight="24">
-    <path
-        android:fillColor="@android:color/white"
-        android:pathData="M8,5v14l11,-7z" />
+    <group
+        android:name="pathGroup"
+        android:pivotX="12"
+        android:pivotY="12">
+        <path
+            android:name="path"
+            android:fillColor="@android:color/white"
+            android:pathData="@string/ic_baseline_play_arrow_24" />
+    </group>
 </vector>

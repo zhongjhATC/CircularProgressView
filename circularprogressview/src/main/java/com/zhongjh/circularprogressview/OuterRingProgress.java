@@ -2,10 +2,16 @@ package com.zhongjh.circularprogressview;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.Build;
+import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * 外圈进度View
@@ -30,7 +36,8 @@ public class OuterRingProgress extends View {
      */
     public void setProgress(int progress) {
         if (progress >= 100) {
-            reset();
+            // 完成进度
+            mCircularProgress.progressComplete();
         } else {
             mSweepAngle = (float) (progress * 3.6);
         }
@@ -48,7 +55,6 @@ public class OuterRingProgress extends View {
     private void init() {
         initPix();
         initPaint();
-        initRect();
     }
 
     private void initPix() {
@@ -68,23 +74,29 @@ public class OuterRingProgress extends View {
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setColor(mCircularProgress.mColor);
-        mPaint.setStrokeWidth(7);
+//        mPaint.setColor(Color.rgb(0, 161, 234));
+        mPaint.setStrokeWidth(8);
     }
 
     /**
      * 初始化矩阵
      */
     private void initRect() {
-        float startx = (float) (mPix * 0.05);
-        float endx = (float) (mPix * 0.95);
-        float starty = (float) (mPix * 0.05);
-        float endy = (float) (mPix * 0.95);
-        mRect = new RectF(startx, starty, endx, endy);
+        // 只new一次
+        if (getMeasuredWidth() > 0 && mRect == null) {
+            float roundWidth = 8;// 圆环的宽度
+            int centreW = getMeasuredWidth() / 2; // 获取圆心的x坐标
+            int centreH = getMeasuredHeight() / 2; // 获取圆心的y坐标
+            int radius = (int) (centreW - roundWidth / 2); //圆环的半径
+            mRect = new RectF(centreW - radius, centreH - radius, centreW
+                    + radius, centreH + radius);
+        }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawArc(mRect, mStartAngle, mSweepAngle, false, mPaint);
+        if (mRect != null)
+            canvas.drawArc(mRect, mStartAngle, mSweepAngle, false, mPaint);
     }
 
     /**
@@ -92,32 +104,26 @@ public class OuterRingProgress extends View {
      */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int desiredWidth = mPix;
-        int desiredHeight = mPix;
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-
         int width;
         int height;
         if (widthMode == MeasureSpec.EXACTLY) {
-            width = widthSize;
-        } else if (widthMode == MeasureSpec.AT_MOST) {
-            width = Math.min(desiredWidth, widthSize);
+            //将layout_width的值给width
+            width = MeasureSpec.getSize(widthMeasureSpec);
         } else {
-            width = desiredWidth;
+            //将控件的默认值100给width
+            width = mPix;
         }
-
 
         if (heightMode == MeasureSpec.EXACTLY) {
-            height = heightSize;
-        } else if (heightMode == MeasureSpec.AT_MOST) {
-            height = Math.min(desiredHeight, heightSize);
+            height = MeasureSpec.getSize(heightMeasureSpec);
         } else {
-            height = desiredHeight;
+            height = mPix;
         }
-
+        //将得到的宽高传入控件
         setMeasuredDimension(width, height);
+        initRect();
     }
+
 }

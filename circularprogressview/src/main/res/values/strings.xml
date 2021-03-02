@@ -1,0 +1,5 @@
+<resources>
+    <string name="ic_baseline_play_arrow_24">M 8 5 L 8 19 L 13.5 15.5 L 19 12 L 8 5</string> <!-- 播放 -->
+    <string name="ic_baseline_stop_24">M 6 6 L 6 18 L 18 18 L 18 6 L 6 6</string><!-- 暂停 -->
+
+</resources>
