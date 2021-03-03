@@ -2,16 +2,9 @@ package com.zhongjh.circularprogressview;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.os.Build;
-import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.view.View;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 /**
  * 外圈进度View
@@ -19,8 +12,7 @@ import androidx.annotation.Nullable;
 public class OuterRingProgress extends View {
 
     private final CircularProgress mCircularProgress;
-    public int mPix = 0; // 取出当前最大正方形数值
-    private Paint mPaint;
+    public Paint mPaint;
     RectF mRect;
     float mStartAngle = -90;
     float mSweepAngle;
@@ -53,17 +45,7 @@ public class OuterRingProgress extends View {
     }
 
     private void init() {
-        initPix();
         initPaint();
-    }
-
-    private void initPix() {
-        DisplayMetrics metrics = getContext().getResources()
-                .getDisplayMetrics();
-        int width = metrics.widthPixels;
-        int height = metrics.heightPixels;
-        float scarea = width * height;
-        mPix = (int) Math.sqrt(scarea * 0.0217);
     }
 
     /**
@@ -73,9 +55,7 @@ public class OuterRingProgress extends View {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(mCircularProgress.mColor);
-//        mPaint.setColor(Color.rgb(0, 161, 234));
-        mPaint.setStrokeWidth(8);
+        mPaint.setColor(mCircularProgress.mColorPrimary);
     }
 
     /**
@@ -84,12 +64,28 @@ public class OuterRingProgress extends View {
     private void initRect() {
         // 只new一次
         if (getMeasuredWidth() > 0 && mRect == null) {
-            float roundWidth = 8;// 圆环的宽度
-            int centreW = getMeasuredWidth() / 2; // 获取圆心的x坐标
-            int centreH = getMeasuredHeight() / 2; // 获取圆心的y坐标
-            int radius = (int) (centreW - roundWidth / 2); //圆环的半径
-            mRect = new RectF(centreW - radius, centreH - radius, centreW
-                    + radius, centreH + radius);
+            if (mCircularProgress.mIsFullStyle) {
+                Paint strokePaint = new Paint();
+                strokePaint.setAntiAlias(true);
+                strokePaint.setColor(mCircularProgress.mColorPrimaryVariant);
+                strokePaint.setStrokeWidth(((float) getMeasuredWidth() / 14));
+                strokePaint.setStyle(Paint.Style.STROKE);
+
+                float roundWidth = (float) (mPaint.getStrokeWidth() * 1.5);// 圆环的宽度
+                int centreW = getMeasuredWidth() / 2; // 获取圆心的x坐标
+                int centreH = getMeasuredHeight() / 2; // 获取圆心的y坐标
+                int radius = (int) (centreW - roundWidth * 4); //圆环的半径
+                mRect = new RectF(centreW - radius, centreH - radius, centreW
+                        + radius, centreH + radius);
+            } else {
+                mPaint.setStrokeWidth(((float) getMeasuredWidth() / 14));
+                float roundWidth = (float) (mPaint.getStrokeWidth() * 0.5);// 圆环的宽度
+                int centreW = getMeasuredWidth() / 2; // 获取圆心的x坐标
+                int centreH = getMeasuredHeight() / 2; // 获取圆心的y坐标
+                int radius = (int) (centreW - roundWidth * 1.5); //圆环的半径
+                mRect = new RectF(centreW - radius, centreH - radius, centreW
+                        + radius, centreH + radius);
+            }
         }
     }
 
@@ -104,25 +100,7 @@ public class OuterRingProgress extends View {
      */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int width;
-        int height;
-        if (widthMode == MeasureSpec.EXACTLY) {
-            //将layout_width的值给width
-            width = MeasureSpec.getSize(widthMeasureSpec);
-        } else {
-            //将控件的默认值100给width
-            width = mPix;
-        }
-
-        if (heightMode == MeasureSpec.EXACTLY) {
-            height = MeasureSpec.getSize(heightMeasureSpec);
-        } else {
-            height = mPix;
-        }
-        //将得到的宽高传入控件
-        setMeasuredDimension(width, height);
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         initRect();
     }
 

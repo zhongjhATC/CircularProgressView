@@ -2,15 +2,13 @@ package com.zhongjh.circularprogressview;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -31,27 +29,28 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
 
     public final static String TAG = CircularProgress.class.getSimpleName();
 
-    public int mPix = 0; // 取出当前最大正方形数值
     public RectF mRect; // 矩形
-    public int mColor = Color.rgb(0, 161, 234); // 整体颜色
-    public int mColorWhite = Color.rgb(255, 255, 255); // 整体颜色
-    public int mPaddingTop, mPaddingLeft, mPaddingRight, mPaddingBotton = 0; // 间距
+    public int mColorPrimary; // 主色调颜色
+    public int mColorPrimaryVariant; // 副色调颜色
     public int mState = CircularProgressState.STOP; // 当前状态
+    public boolean mIsFullStyle = false; // 是否铺满的样式
 
     private ImageView mFullCircleImage; // 外圈的圆形图片控件
     private ImageView mFillCircleImage; // 填充的圆形图片控件
     private ImageView mArcImage; // 弧形，用于进度显示控件
-    private ImageView mPlayImage; // 播放图片控件
+    private ImageView mFunctionButtonImage; // 功能按钮图片控件
     private OuterRingProgress mOuterRingProgress; // 第二次进度的控件
 
     private Drawable mDrawablePlay; // 播放图片
     private Drawable mDrawableDone; // 完成图片
 
-    private Paint strokeColor; // 外圈的圆形颜料
-    private Paint fillColor; // 填充的圆形颜料
+    private Paint mStrokePaint; // 外圈的圆形颜料
+    private Paint mFillPaint; // 填充的圆形颜料
 
     private RotateAnimation mAnimatArcRotation; // 外圈的旋转动画
+    private int mDrawablePlayId, mAvdPlayToStopId, mAvdStopToPlayId; // 转换动画的资源id
     private AnimatedVectorDrawableCompat mAnimatPlayToStop; // 播放转换暂停的动画
+    private AnimatedVectorDrawableCompat mAnimatStopToPlay; // 暂停转换播放的动画
     private ScaleAnimation mAnimatScaleShowDone; // 显示完成的动画
     private AnimationSet mAnimatShowDonw; // 显示完成的动画合集
 
@@ -63,10 +62,12 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
 
     public CircularProgress(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        initArray(context, attrs);
     }
 
     public CircularProgress(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        initArray(context, attrs);
     }
 
     /**
@@ -74,26 +75,53 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
      */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int width;
-        int height;
-        if (widthMode == MeasureSpec.EXACTLY) {
-            //将layout_width的值给width
-            width = MeasureSpec.getSize(widthMeasureSpec);
-        } else {
-            //将控件的默认值100给width
-            width = mPix;
-        }
-
-        if (heightMode == MeasureSpec.EXACTLY) {
-            height = MeasureSpec.getSize(heightMeasureSpec);
-        } else {
-            height = mPix;
-        }
-        //将得到的宽高传入控件
-        setMeasuredDimension(width, height);
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         initAll();
+    }
+
+    // region 公开API
+
+    /**
+     * 设置铺满样式
+     *
+     * @param isFullStyle 是/否
+     */
+    public void setFullStyle(boolean isFullStyle) {
+        mIsFullStyle = isFullStyle;
+        if (isFullStyle) {
+            mFunctionButtonImage.setColorFilter(mColorPrimaryVariant); // 按钮也改成副色调
+        } else {
+            // 跟上面的相反
+            mFunctionButtonImage.setColorFilter(mColorPrimary);
+        }
+        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+        initFullCircleImage(conf);
+        initArcImage(conf);
+    }
+
+    /**
+     * 设置主色调颜色
+     */
+    public void setPrimaryColor(int color) {
+        mColorPrimary = getContext().getResources().getColor(color);
+        mStrokePaint.setColor(mColorPrimary);
+        mFillPaint.setColor(mColorPrimary);
+        mOuterRingProgress.mPaint.setColor(mColorPrimary);
+
+        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+        initFullCircleImage(conf);
+        initArcImage(conf);
+        initFillCircleImage(conf);
+
+        if (!mIsFullStyle)
+            mFunctionButtonImage.setColorFilter(mColorPrimary);
+    }
+
+    /**
+     * 修改副色调颜色
+     */
+    public void setPrimaryVariantColor(int color) {
+        mColorPrimaryVariant = getContext().getResources().getColor(color);
     }
 
     /**
@@ -118,12 +146,61 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         Log.d(TAG, "reset");
         mOuterRingProgress.reset();
         mOuterRingProgress.setVisibility(View.GONE);
-        mPlayImage.setImageDrawable(mDrawablePlay);
-        mPlayImage.setColorFilter(mColor);
+        if (mFunctionButtonImage.getDrawable() == mAnimatPlayToStop) {
+            // 轮到按钮开始动画
+            mFunctionButtonImage.setImageDrawable(mAnimatStopToPlay);
+            mAnimatStopToPlay.start();
+        } else {
+            mFunctionButtonImage.setImageDrawable(mDrawablePlay);
+        }
+        if (mIsFullStyle)
+            mFunctionButtonImage.setColorFilter(mColorPrimaryVariant);
+        else
+            mFunctionButtonImage.setColorFilter(mColorPrimary);
         mFillCircleImage.setVisibility(View.GONE);
+        mArcImage.clearAnimation();
         mArcImage.setVisibility(View.GONE);
         mFullCircleImage.setVisibility(View.VISIBLE);
         mState = CircularProgressState.STOP;
+    }
+
+    /**
+     * 设置功能图片并且重置
+     *
+     * @param drawablePlay  播放图片
+     * @param avdPlayToStop 播放转换暂停的动画
+     * @param avdStopToPlay 暂停转换播放的动画
+     */
+    public void setFunctionImage(int drawablePlay, int avdPlayToStop, int avdStopToPlay) {
+        mDrawablePlayId = drawablePlay;
+        mAvdPlayToStopId = avdPlayToStop;
+        mAvdStopToPlayId = avdStopToPlay;
+        initDrawablePlay();
+        initAnimation();
+    }
+
+    // endregion
+
+    /**
+     * 初始化有关属性
+     */
+    private void initArray(@NonNull Context context, @Nullable AttributeSet attrs) {
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.CircularProgress);
+        mColorPrimary = ta.getColor(R.styleable.CircularProgress_circularPrimaryColor, context.getResources().getColor(R.color.circula_progress_color_primary));
+        mColorPrimaryVariant = ta.getColor(R.styleable.CircularProgress_circularPrimaryVariantColor, context.getResources().getColor(R.color.circula_progress_color_primary_variant));
+
+        mDrawablePlayId = ta.getResourceId(R.styleable.CircularProgress_circularDrawablePlayId, R.drawable.ic_baseline_play_arrow_24);
+        mAvdPlayToStopId = ta.getResourceId(R.styleable.CircularProgress_circularAvdPlayToStopId, R.drawable.avd_play_to_stop);
+        mAvdStopToPlayId = ta.getResourceId(R.styleable.CircularProgress_circularAvdStopToPlayId, R.drawable.avd_stop_to_play);
+        if (mDrawablePlayId == R.drawable.ic_baseline_play_arrow_24 ||
+                mAvdPlayToStopId == R.drawable.avd_play_to_stop ||
+                mAvdStopToPlayId == R.drawable.avd_stop_to_play) {
+            // 必须3个都设置值，如果其中一个不设置，那么就都是默认值
+            mDrawablePlayId = R.drawable.ic_baseline_play_arrow_24;
+            mAvdPlayToStopId = R.drawable.avd_play_to_stop;
+            mAvdStopToPlayId = R.drawable.avd_stop_to_play;
+        }
+        ta.recycle();
     }
 
     /**
@@ -132,19 +209,18 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     private void initAll() {
         // 只new一次
         if (getMeasuredWidth() > 0 && mRect == null) {
-            float roundWidth = 8;// 圆环的宽度
+            initPaint();
+            float roundWidth = (float) (mStrokePaint.getStrokeWidth() * 1.5);// 圆环的宽度
             int centreW = getMeasuredWidth() / 2; // 获取圆心的x坐标
             int centreH = getMeasuredHeight() / 2; // 获取圆心的y坐标
-            int radius = (int) (centreW - roundWidth / 2); //圆环的半径
-            mRect = new RectF(0, 0, getWidth(), getHeight());
+            int radius = (int) (centreW - roundWidth * 2); //圆环的半径
+            mRect = new RectF(centreW - radius, centreH - radius, centreW
+                    + radius, centreH + radius);
 
             setOnClickListener(this);
-            displayMetrics();
             initialise();
-            initPaint();
             initAnimation();
-            initAnimationListener();
-            init();
+            initView();
         }
     }
 
@@ -155,13 +231,13 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         mFullCircleImage = new ImageView(getContext());
         mFillCircleImage = new ImageView(getContext());
         mArcImage = new ImageView(getContext());
-        mPlayImage = new ImageView(getContext());
+        mFunctionButtonImage = new ImageView(getContext());
         mOuterRingProgress = new OuterRingProgress(getContext(), this);
 
         mFullCircleImage.setClickable(false);
         mFillCircleImage.setClickable(false);
         mArcImage.setClickable(false);
-        mPlayImage.setClickable(false);
+        mFunctionButtonImage.setClickable(false);
         mOuterRingProgress.setClickable(false);
     }
 
@@ -169,18 +245,18 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
      * 初始化颜料颜色
      */
     private void initPaint() {
-        strokeColor = new Paint(Paint.ANTI_ALIAS_FLAG);
-        strokeColor.setAntiAlias(true);
-        strokeColor.setColor(mColor);
+        mStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mStrokePaint.setAntiAlias(true);
+        mStrokePaint.setColor(mColorPrimary);
         // 画外线，所以使用Stroke模式
-        strokeColor.setStrokeWidth(2);
-        strokeColor.setStyle(Paint.Style.STROKE);
+        mStrokePaint.setStrokeWidth((float) getMeasuredWidth() / 56);
+        mStrokePaint.setStyle(Paint.Style.STROKE);
 
         // 填充模式
-        fillColor = new Paint(Paint.ANTI_ALIAS_FLAG);
-        fillColor.setColor(mColor);
-        fillColor.setStyle(Paint.Style.FILL_AND_STROKE);
-        fillColor.setAntiAlias(true);
+        mFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mFillPaint.setColor(mColorPrimary);
+        mFillPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mFillPaint.setAntiAlias(true);
     }
 
     /**
@@ -192,7 +268,8 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
                 0.5f);
         mAnimatArcRotation.setDuration(1000);
 
-        mAnimatPlayToStop = AnimatedVectorDrawableCompat.create(getContext(), R.drawable.avd_play_to_stop);
+        mAnimatPlayToStop = AnimatedVectorDrawableCompat.create(getContext(), mAvdPlayToStopId);
+        mAnimatStopToPlay = AnimatedVectorDrawableCompat.create(getContext(), mAvdStopToPlayId);
 
         mAnimatShowDonw = new AnimationSet(true);
 
@@ -213,6 +290,8 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
 
         mAnimatShowDonw.addAnimation(scale_in);
         mAnimatShowDonw.addAnimation(fade_in);
+
+        initAnimationListener();
     }
 
     /**
@@ -226,11 +305,6 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         mAnimatPlayToStop.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
 
             @Override
-            public void onAnimationStart(Drawable drawable) {
-                super.onAnimationStart(drawable);
-            }
-
-            @Override
             public void onAnimationEnd(Drawable drawable) {
                 super.onAnimationEnd(drawable);
                 mState = CircularProgressState.PLAY;
@@ -240,6 +314,13 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
                 mOuterRingProgress.setVisibility(View.VISIBLE);
 
                 mCircularProgressListener.onStart();
+            }
+        });
+
+        mAnimatStopToPlay.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
+            @Override
+            public void onAnimationStart(Drawable drawable) {
+                super.onAnimationStart(drawable);
             }
         });
 
@@ -262,10 +343,10 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
                 mState = CircularProgressState.DONE;
                 mCircularProgressListener.onDone();
                 mOuterRingProgress.setVisibility(View.GONE);
-                mPlayImage.setVisibility(View.VISIBLE);
-                mPlayImage.setImageDrawable(mDrawableDone);
-                mPlayImage.setColorFilter(mColorWhite);
-                mPlayImage.startAnimation(mAnimatShowDonw);
+                mFunctionButtonImage.setVisibility(View.VISIBLE);
+                mFunctionButtonImage.setImageDrawable(mDrawableDone);
+                mFunctionButtonImage.setColorFilter(mColorPrimaryVariant);
+                mFunctionButtonImage.startAnimation(mAnimatShowDonw);
             }
         });
     }
@@ -283,7 +364,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         @Override
         public void onAnimationEnd(Animation animation) {
             // 轮到按钮开始动画
-            mPlayImage.setImageDrawable(mAnimatPlayToStop);
+            mFunctionButtonImage.setImageDrawable(mAnimatPlayToStop);
             mAnimatPlayToStop.start();
         }
 
@@ -294,30 +375,13 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     };
 
     /**
-     * 取出当前最大正方形数值
+     * 初始化并且添加view
      */
-    private void displayMetrics() {
-        DisplayMetrics metrics = getContext().getResources()
-                .getDisplayMetrics();
-
-        int width = metrics.widthPixels;
-        int height = metrics.heightPixels;
-        float scarea = width * height;
-        mPix = (int) Math.sqrt(scarea * 0.0217);
-    }
-
-    public void init() {
+    private void initView() {
         // 整个布局
         LayoutParams lp = new LayoutParams(
                 LayoutParams.MATCH_PARENT,
                 LayoutParams.MATCH_PARENT);
-
-        // 画一个矩形
-//        float startx = (float) (mPix * 0.02);
-//        float endx = (float) (mPix * 0.98);
-//        float starty = (float) (mPix * 0.02);
-//        float endy = (float) (mPix * 0.98);
-//        mRect = new RectF(2, 2, mPix-2, mPix-2);
 
         // 色彩模式
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
@@ -331,8 +395,9 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         addView(mFullCircleImage, lp);
         addView(mFillCircleImage, lp);
         addView(mArcImage, lp);
-        addView(mPlayImage, lp);
+        addView(mFunctionButtonImage, lp);
         addView(mOuterRingProgress, lp);
+        mArcImage.setVisibility(View.GONE); // 初始化的第一个进度是隐藏的
         mFillCircleImage.setVisibility(View.GONE); // 初始化的填满圆形是隐藏的
     }
 
@@ -345,7 +410,11 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         // 创建一个画布
         Canvas fullCircleCanvas = new Canvas(fullCircleBmp);
         // 画一个圆形
-        fullCircleCanvas.drawArc(mRect, 0, 360, false, strokeColor);
+        if (mIsFullStyle) {
+            fullCircleCanvas.drawArc(mRect, 0, 360, false, mFillPaint);
+        } else {
+            fullCircleCanvas.drawArc(mRect, 0, 360, false, mStrokePaint);
+        }
         mFullCircleImage.setImageBitmap(fullCircleBmp);
     }
 
@@ -358,7 +427,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         // 创建一个画布
         Canvas fillCircleCanvas = new Canvas(fillCircleBmp);
         // 画一个圆形
-        fillCircleCanvas.drawArc(mRect, 0, 360, false, fillColor);
+        fillCircleCanvas.drawArc(mRect, 0, 360, false, mFillPaint);
         mFillCircleImage.setImageBitmap(fillCircleBmp);
     }
 
@@ -370,7 +439,24 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         Bitmap arcBmp = Bitmap.createBitmap(getMeasuredWidth(), getMeasuredHeight(), conf);
         // 创建一个画布
         Canvas arcCanvas = new Canvas(arcBmp);
-        arcCanvas.drawArc(mRect, -80, 340, false, strokeColor);
+        if (mIsFullStyle) {
+            Paint strokePaint = new Paint();
+            strokePaint.setAntiAlias(true);
+            strokePaint.setColor(mColorPrimaryVariant);
+            strokePaint.setStrokeWidth(((float) getMeasuredWidth() / 14));
+            strokePaint.setStyle(Paint.Style.STROKE);
+
+            float roundWidth = (float) (mStrokePaint.getStrokeWidth() * 1.5);// 圆环的宽度
+            int centreW = getMeasuredWidth() / 2; // 获取圆心的x坐标
+            int centreH = getMeasuredHeight() / 2; // 获取圆心的y坐标
+            int radius = (int) (centreW - roundWidth * 4); //圆环的半径
+            RectF rect = new RectF(centreW - radius, centreH - radius, centreW
+                    + radius, centreH + radius);
+            arcCanvas.drawArc(rect, -80, 340, false, strokePaint);
+        } else {
+            mStrokePaint.setColor(mColorPrimary);
+            arcCanvas.drawArc(mRect, -80, 340, false, mStrokePaint);
+        }
         mArcImage.setImageBitmap(arcBmp);
     }
 
@@ -379,11 +465,11 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
      */
     @SuppressLint("UseCompatLoadingForDrawables")
     private void initDrawablePlay() {
-        mDrawablePlay = getContext().getDrawable(R.drawable.ic_baseline_play_arrow_24);
-        mPlayImage.setColorFilter(mColor);
-        mPlayImage.setPadding(DisplayMetricsUtils.dip2px(6), DisplayMetricsUtils.dip2px(6),
+        mDrawablePlay = getContext().getDrawable(mDrawablePlayId);
+        mFunctionButtonImage.setColorFilter(mColorPrimary);
+        mFunctionButtonImage.setPadding(DisplayMetricsUtils.dip2px(6), DisplayMetricsUtils.dip2px(6),
                 DisplayMetricsUtils.dip2px(6), DisplayMetricsUtils.dip2px(6)); // 上下间距
-        mPlayImage.setImageDrawable(mDrawablePlay);
+        mFunctionButtonImage.setImageDrawable(mDrawablePlay);
     }
 
     /**
@@ -403,11 +489,12 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     /**
      * 动画开始
      */
-    public void animation() {
+    private void animation() {
         if (mState == CircularProgressState.STOP) {
             Log.d(TAG, "play");
             // 显示进度
-            mFullCircleImage.setVisibility(View.GONE);
+            if (!mIsFullStyle)
+                mFullCircleImage.setVisibility(View.GONE);
             mArcImage.setVisibility(View.VISIBLE);
             mAnimatArcRotation.setAnimationListener(mAnimatArcRotationListener);
             mAnimatArcRotation.setRepeatCount(0);
@@ -419,7 +506,8 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
             // 隐藏第二个进度圆形
             mOuterRingProgress.setVisibility(View.GONE);
             // 隐藏外圈
-            mFullCircleImage.setVisibility(View.GONE);
+            if (!mIsFullStyle)
+                mFullCircleImage.setVisibility(View.GONE);
             // 显示第一个进度弧形
             mArcImage.setVisibility(View.VISIBLE);
             // 开始了动画
@@ -436,7 +524,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
      * 进度完成
      */
     public void progressComplete() {
-        mPlayImage.setVisibility(View.GONE);
+        mFunctionButtonImage.setVisibility(View.GONE);
         mFillCircleImage.setVisibility(View.VISIBLE);
         // 开始了完成动画
         mFillCircleImage.startAnimation(mAnimatScaleShowDone);

@@ -1,0 +1,17 @@
+<resources>
+
+    <!-- 自定义属性 -->
+    <declare-styleable name="CircularProgress">
+        <attr name="circularIsFullStyle" format="boolean" /> <!-- 是否铺满的样式 -->
+        <attr name="circularPrimaryColor" format="integer" /> <!-- 主色调 -->
+        <attr name="circularPrimaryVariantColor" format="integer" /> <!-- 完成图标的色调 -->
+        <attr name="circularDrawablePlayId" format="integer" /> <!-- 必须5个属性都设置才能生效，播放图片 -->
+        <attr name="circularDrawableStopId" format="integer" /> <!-- 必须5个属性都设置才能生效，暂停图片 -->
+        <attr name="circularAslPlayAndStopId" format="integer" /> <!-- 必须5个属性都设置才能生效，播放和暂停互相转换的图片 -->
+        <attr name="circularAvdPlayToStopId" format="integer" /> <!-- 必须5个属性都设置才能生效，播放转换暂停的动画 -->
+        <attr name="circularAvdStopToPlayId" format="integer" /> <!-- 必须5个属性都设置才能生效，暂停转换播放的动画 -->
+
+
+    </declare-styleable>
+
+</resources>

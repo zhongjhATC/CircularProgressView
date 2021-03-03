@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="circula_progress_color_primary">#FF03DAC5</color>
+    <color name="circula_progress_color_primary_variant">#FFFFFFFF</color>
+</resources>

@@ -1,6 +1,6 @@
 <animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
-    android:drawable="@drawable/ic_baseline_stop_24">
+    android:drawable="@drawable/ic_baseline_done">
 
     <!-- 旋转动画 -->
     <target android:name="pathGroup">
@@ -14,15 +14,15 @@
         </aapt:attr>
     </target>
 
-    <!-- 暂停到播放的动画 -->
+    <!-- 播放到暂停的动画 -->
     <target android:name="path">
         <aapt:attr name="android:animation">
             <objectAnimator
                 android:duration="250"
                 android:interpolator="@android:interpolator/fast_out_slow_in"
                 android:propertyName="pathData"
-                android:valueFrom="@string/ic_baseline_stop_24"
-                android:valueTo="@string/ic_baseline_play_arrow_24"
+                android:valueFrom="@string/ic_baseline_done"
+                android:valueTo="@string/ic_baseline_stop"
                 android:valueType="pathType" />
         </aapt:attr>
     </target>

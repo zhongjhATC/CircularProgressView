@@ -23,9 +23,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         findViewById(R.id.button).setOnClickListener(v -> {
-            downLoadSigTask.cancel(true);
+            if (downLoadSigTask != null)
+                downLoadSigTask.cancel(true);
             mCircularProgress.reset();
         });
+
+        // 修改主色调
+        findViewById(R.id.button2).setOnClickListener(v -> mCircularProgress.setPrimaryColor(R.color.purple_200));
+
+        // 修改副色调
+        findViewById(R.id.button3).setOnClickListener(v -> mCircularProgress.setPrimaryVariantColor(R.color.purple_700));
+
+        // 修改成铺满样式
+        findViewById(R.id.button4).setOnClickListener(v -> mCircularProgress.setFullStyle(true));
+
+        // 修改图标
+        findViewById(R.id.button5).setOnClickListener(v -> mCircularProgress.setFunctionImage(R.drawable.ic_baseline_done, R.drawable.avd_done_to_stop, R.drawable.avd_stop_to_done));
 
         mCircularProgress = (CircularProgress) findViewById(R.id.circularProgress);
         mCircularProgress.setCircularProgressListener(new CircularProgressListener() {
