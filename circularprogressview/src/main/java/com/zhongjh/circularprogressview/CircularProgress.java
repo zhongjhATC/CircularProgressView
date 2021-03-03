@@ -443,13 +443,21 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
             Paint strokePaint = new Paint();
             strokePaint.setAntiAlias(true);
             strokePaint.setColor(mColorPrimaryVariant);
-            strokePaint.setStrokeWidth(((float) getMeasuredWidth() / 14));
+            strokePaint.setStrokeWidth(mStrokePaint.getStrokeWidth());
+//            strokePaint.setStrokeWidth(((float) getMeasuredWidth() / 14));
             strokePaint.setStyle(Paint.Style.STROKE);
+
+//            mStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+//            mStrokePaint.setAntiAlias(true);
+//            mStrokePaint.setColor(mColorPrimary);
+//            // 画外线，所以使用Stroke模式
+//            mStrokePaint.setStrokeWidth((float) getMeasuredWidth() / 56);
+//            mStrokePaint.setStyle(Paint.Style.STROKE);
 
             float roundWidth = (float) (mStrokePaint.getStrokeWidth() * 1.5);// 圆环的宽度
             int centreW = getMeasuredWidth() / 2; // 获取圆心的x坐标
             int centreH = getMeasuredHeight() / 2; // 获取圆心的y坐标
-            int radius = (int) (centreW - roundWidth * 4); //圆环的半径
+            int radius = (int) (centreW - roundWidth * 2.5); //圆环的半径
             RectF rect = new RectF(centreW - radius, centreH - radius, centreW
                     + radius, centreH + radius);
             arcCanvas.drawArc(rect, -80, 340, false, strokePaint);
