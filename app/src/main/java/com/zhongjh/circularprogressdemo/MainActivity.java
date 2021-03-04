@@ -40,7 +40,9 @@ public class MainActivity extends AppCompatActivity {
         // 修改图标
         findViewById(R.id.button5).setOnClickListener(v -> mCircularProgress.setFunctionImage(R.drawable.ic_baseline_done, R.drawable.avd_done_to_stop, R.drawable.avd_stop_to_done));
 
-        mCircularProgress = (CircularProgress) findViewById(R.id.circularProgress);
+        findViewById(R.id.button6).setOnClickListener(v -> mCircularProgress.setFullProgressColor(R.color.red));
+
+        mCircularProgress = findViewById(R.id.circularProgress);
         mCircularProgress.setCircularProgressListener(new CircularProgressListener() {
             @Override
             public void onStart() {
@@ -56,15 +58,30 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStop() {
-                // 这里写停止当前线程的操作
-                downLoadSigTask.cancel(true);
-                // 要自己告诉mCircularProgress重置，因为不知道自己停止当前线程要消耗多少时间
-                mCircularProgress.reset();
+                stop();
             }
 
         });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stop();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stop();
+    }
+
+    private void stop() {
+        // 这里写停止当前线程的操作
+        downLoadSigTask.cancel(true);
+        // 要自己告诉mCircularProgress重置，因为不知道自己停止当前线程要消耗多少时间
+        mCircularProgress.reset();
+    }
 
     /**
      * 模拟的一个消耗时间任务

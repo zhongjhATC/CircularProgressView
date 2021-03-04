@@ -2,4 +2,5 @@
 <resources>
     <color name="circula_progress_color_primary">#FF03DAC5</color>
     <color name="circula_progress_color_primary_variant">#FFFFFFFF</color>
+    <color name="black">#000000</color>
 </resources>
