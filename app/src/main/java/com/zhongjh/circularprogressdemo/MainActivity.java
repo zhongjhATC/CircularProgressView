@@ -40,7 +40,11 @@ public class MainActivity extends AppCompatActivity {
         // 修改图标
         findViewById(R.id.button5).setOnClickListener(v -> mCircularProgress.setFunctionImage(R.drawable.ic_baseline_done, R.drawable.avd_done_to_stop, R.drawable.avd_stop_to_done));
 
+        // 修改铺满模式下的进度颜色
         findViewById(R.id.button6).setOnClickListener(v -> mCircularProgress.setFullProgressColor(R.color.red));
+
+        // 修改成普通的按钮
+        findViewById(R.id.button7).setOnClickListener(v -> mCircularProgress.setProgressMode(false));
 
         mCircularProgress = findViewById(R.id.circularProgress);
         mCircularProgress.setCircularProgressListener(new CircularProgressListener() {
@@ -61,7 +65,13 @@ public class MainActivity extends AppCompatActivity {
                 stop();
             }
 
+            @Override
+            public void onClick() {
+                Toast.makeText(MainActivity.this, "普通模式下触发", Toast.LENGTH_SHORT).show();
+            }
+
         });
+
     }
 
     @Override

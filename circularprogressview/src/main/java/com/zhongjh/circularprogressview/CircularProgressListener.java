@@ -17,4 +17,9 @@ public interface CircularProgressListener {
      */
     void onStop();
 
+    /**
+     * 只有普通模式下才触发
+     */
+    void onClick();
+
 }

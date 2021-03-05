@@ -29,6 +29,8 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
 
     public final static String TAG = CircularProgress.class.getSimpleName();
 
+    public boolean mIsProgress = true; // 整个控件根据它是否启用进度，否则只是一个普通的按钮
+
     public RectF mRect; // 矩形
     public RectF mRectFullStyle; // 铺满样式的矩形
     public int mColorPrimary; // 主色调颜色
@@ -81,10 +83,21 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Log.d(TAG, "getWidth:" + getWidth());
+        Log.d(TAG, "getMeasuredWidth:" + getMeasuredWidth());
         initAll();
     }
 
     // region 公开API
+
+    /**
+     * 设置是否进度模式
+     *
+     * @param isProgress 默认为true,如果为false则是一个普通的button
+     */
+    public void setProgressMode(boolean isProgress) {
+        mIsProgress = isProgress;
+    }
 
     /**
      * 设置铺满样式
@@ -106,6 +119,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
 
     /**
      * 设置主色调颜色
+     *
      * @param color 颜色值
      */
     public void setPrimaryColor(int color) {
@@ -124,6 +138,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
 
     /**
      * 修改副色调颜色
+     *
      * @param color 颜色值
      */
     public void setPrimaryVariantColor(int color) {
@@ -132,6 +147,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
 
     /**
      * 修改铺满模式下的进度颜色
+     *
      * @param color 颜色值
      */
     public void setFullProgressColor(int color) {
@@ -273,7 +289,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         mStrokePaint.setAntiAlias(true);
         mStrokePaint.setColor(mColorPrimary);
         // 画外线，所以使用Stroke模式，最小值为4
-        mStrokePaint.setStrokeWidth(Math.max(4,Integer.parseInt(String.valueOf(getMeasuredWidth() / 56))));
+        mStrokePaint.setStrokeWidth(Math.max(4, Integer.parseInt(String.valueOf(getMeasuredWidth() / 56))));
         mStrokePaint.setStyle(Paint.Style.STROKE);
 
         // 填充模式
@@ -534,8 +550,11 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
 
     @Override
     public void onClick(View v) {
-        // 启动动画
-        animation();
+        if (mIsProgress)
+            // 启动动画
+            animation();
+        else
+            mCircularProgressListener.onClick();
     }
 
     /**
