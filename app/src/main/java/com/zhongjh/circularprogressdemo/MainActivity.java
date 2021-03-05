@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
             mCircularProgress.reset();
         });
 
+
         // 修改主色调
         findViewById(R.id.button2).setOnClickListener(v -> mCircularProgress.setPrimaryColor(R.color.purple_200));
 
@@ -46,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
         // 修改成普通的按钮
         findViewById(R.id.button7).setOnClickListener(v -> mCircularProgress.setProgressMode(false));
 
-        mCircularProgress = findViewById(R.id.circularProgress);
         mCircularProgress.setCircularProgressListener(new CircularProgressListener() {
             @Override
             public void onStart() {

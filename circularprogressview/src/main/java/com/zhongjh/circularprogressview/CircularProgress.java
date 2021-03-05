@@ -70,11 +70,15 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     public CircularProgress(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         initArray(context, attrs);
+        initPaint();
+        initialise();
     }
 
     public CircularProgress(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initArray(context, attrs);
+        initPaint();
+        initialise();
     }
 
     /**
@@ -241,7 +245,6 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     private void initAll() {
         // 只new一次
         if (getMeasuredWidth() > 0 && mRect == null) {
-            initPaint();
             float roundWidth = mStrokePaint.getStrokeWidth() * 2;// 圆环的宽度
             int centreW = getMeasuredWidth() / 2; // 获取圆心的x坐标
             int centreH = getMeasuredHeight() / 2; // 获取圆心的y坐标
@@ -256,7 +259,6 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
                     mRect.bottom - mStrokePaint.getStrokeWidth() / 2);
 
             setOnClickListener(this);
-            initialise();
             initAnimation();
             initView();
         }
@@ -452,77 +454,85 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
      * 初始化外圈图形
      */
     private void initFullCircleImage() {
-        // 创建一个bitmap
-        Bitmap fullCircleBmp = Bitmap.createBitmap(getMeasuredWidth(), getMeasuredHeight(), mConf);
-        // 创建一个画布
-        Canvas fullCircleCanvas = new Canvas(fullCircleBmp);
-        // 画一个圆形
-        if (mIsFullStyle) {
-            fullCircleCanvas.drawArc(mRect, 0, 360, false, mFillPaint);
-        } else {
-            fullCircleCanvas.drawArc(mRect, 0, 360, false, mStrokePaint);
+        if (getMeasuredWidth() > 0) {
+            // 创建一个bitmap
+            Bitmap fullCircleBmp = Bitmap.createBitmap(getMeasuredWidth(), getMeasuredHeight(), mConf);
+            // 创建一个画布
+            Canvas fullCircleCanvas = new Canvas(fullCircleBmp);
+            // 画一个圆形
+            if (mIsFullStyle) {
+                fullCircleCanvas.drawArc(mRect, 0, 360, false, mFillPaint);
+            } else {
+                fullCircleCanvas.drawArc(mRect, 0, 360, false, mStrokePaint);
+            }
+            mFullCircleImage.setImageBitmap(fullCircleBmp);
         }
-        mFullCircleImage.setImageBitmap(fullCircleBmp);
     }
 
     /**
      * 初始化填充的圆形
      */
     private void initFillCircleImage() {
-        // 创建一个bitmap
-        Bitmap fillCircleBmp = Bitmap.createBitmap(getMeasuredWidth(), getMeasuredHeight(), mConf);
-        // 创建一个画布
-        Canvas fillCircleCanvas = new Canvas(fillCircleBmp);
-        // 画一个圆形
-        fillCircleCanvas.drawArc(mRect, 0, 360, false, mFillPaint);
-        mFillCircleImage.setImageBitmap(fillCircleBmp);
+        if (getMeasuredWidth() > 0) {
+            // 创建一个bitmap
+            Bitmap fillCircleBmp = Bitmap.createBitmap(getMeasuredWidth(), getMeasuredHeight(), mConf);
+            // 创建一个画布
+            Canvas fillCircleCanvas = new Canvas(fillCircleBmp);
+            // 画一个圆形
+            fillCircleCanvas.drawArc(mRect, 0, 360, false, mFillPaint);
+            mFillCircleImage.setImageBitmap(fillCircleBmp);
+        }
     }
 
     /**
      * 初始化一个弧形，用于进度显示
      */
     private void initArcImage() {
-        // 创建一个bitmap
-        Bitmap arcBmp = Bitmap.createBitmap(getMeasuredWidth(), getMeasuredHeight(), mConf);
-        // 创建一个画布
-        Canvas arcCanvas = new Canvas(arcBmp);
-        if (mIsFullStyle) {
-            Paint strokePaint = new Paint();
-            strokePaint.setAntiAlias(true);
-            strokePaint.setColor(mColorPrimaryVariant);
-            strokePaint.setStrokeWidth(mStrokePaint.getStrokeWidth());
-            strokePaint.setStyle(Paint.Style.STROKE);
-            if (mState == CircularProgressState.PLAY)
-                arcCanvas.drawArc(mRectFullStyle, 0, 360, false, strokePaint);
-            else
-                arcCanvas.drawArc(mRectFullStyle, -80, 340, false, strokePaint);
-        } else {
-            mStrokePaint.setColor(mColorPrimary);
-            arcCanvas.drawArc(mRect, -80, 340, false, mStrokePaint);
+        if (getMeasuredWidth() > 0) {
+            // 创建一个bitmap
+            Bitmap arcBmp = Bitmap.createBitmap(getMeasuredWidth(), getMeasuredHeight(), mConf);
+            // 创建一个画布
+            Canvas arcCanvas = new Canvas(arcBmp);
+            if (mIsFullStyle) {
+                Paint strokePaint = new Paint();
+                strokePaint.setAntiAlias(true);
+                strokePaint.setColor(mColorPrimaryVariant);
+                strokePaint.setStrokeWidth(mStrokePaint.getStrokeWidth());
+                strokePaint.setStyle(Paint.Style.STROKE);
+                if (mState == CircularProgressState.PLAY)
+                    arcCanvas.drawArc(mRectFullStyle, 0, 360, false, strokePaint);
+                else
+                    arcCanvas.drawArc(mRectFullStyle, -80, 340, false, strokePaint);
+            } else {
+                mStrokePaint.setColor(mColorPrimary);
+                arcCanvas.drawArc(mRect, -80, 340, false, mStrokePaint);
+            }
+            mArcImage.setImageBitmap(arcBmp);
         }
-        mArcImage.setImageBitmap(arcBmp);
     }
 
     /**
      * 初始化一个弧形360覆盖，用于铺满模式的空白轮廓进度框
      */
     private void initArcImage360() {
-        // 创建一个bitmap
-        Bitmap arcBmp = Bitmap.createBitmap(getMeasuredWidth(), getMeasuredHeight(), mConf);
-        // 创建一个画布
-        Canvas arcCanvas = new Canvas(arcBmp);
-        Paint strokePaint = new Paint();
-        strokePaint.setAntiAlias(true);
-        strokePaint.setColor(mColorPrimaryVariant);
-        strokePaint.setStrokeWidth(mStrokePaint.getStrokeWidth());
-        strokePaint.setStyle(Paint.Style.STROKE);
-        RectF rect = new RectF(mRect.left + mStrokePaint.getStrokeWidth() / 2,
-                mRect.top + mStrokePaint.getStrokeWidth() / 2,
-                mRect.right - mStrokePaint.getStrokeWidth() / 2,
-                mRect.bottom - mStrokePaint.getStrokeWidth() / 2);
-        arcCanvas.drawArc(rect, 0, 360, false, strokePaint);
+        if (getMeasuredWidth() > 0) {
+            // 创建一个bitmap
+            Bitmap arcBmp = Bitmap.createBitmap(getMeasuredWidth(), getMeasuredHeight(), mConf);
+            // 创建一个画布
+            Canvas arcCanvas = new Canvas(arcBmp);
+            Paint strokePaint = new Paint();
+            strokePaint.setAntiAlias(true);
+            strokePaint.setColor(mColorPrimaryVariant);
+            strokePaint.setStrokeWidth(mStrokePaint.getStrokeWidth());
+            strokePaint.setStyle(Paint.Style.STROKE);
+            RectF rect = new RectF(mRect.left + mStrokePaint.getStrokeWidth() / 2,
+                    mRect.top + mStrokePaint.getStrokeWidth() / 2,
+                    mRect.right - mStrokePaint.getStrokeWidth() / 2,
+                    mRect.bottom - mStrokePaint.getStrokeWidth() / 2);
+            arcCanvas.drawArc(rect, 0, 360, false, strokePaint);
 
-        mArcImage360.setImageBitmap(arcBmp);
+            mArcImage360.setImageBitmap(arcBmp);
+        }
     }
 
     /**
