@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mCircularProgress = findViewById(R.id.circularProgress);
         findViewById(R.id.button).setOnClickListener(v -> {
             if (downLoadSigTask != null)
                 downLoadSigTask.cancel(true);

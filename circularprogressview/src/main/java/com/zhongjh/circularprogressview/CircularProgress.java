@@ -443,7 +443,12 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         addView(mFillCircleImage, lp);
         addView(mArcImage, lp);
         addView(mArcImage360, lp);
-        addView(mFunctionButtonImage, lp);
+        LayoutParams lp2 = new LayoutParams(
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT);
+        lp2.setMargins((int) (getMeasuredWidth() * 0.10), (int) (getMeasuredWidth() * 0.10),
+                (int) (getMeasuredWidth() * 0.10), (int) (getMeasuredWidth() * 0.10));
+        addView(mFunctionButtonImage, lp2);
         addView(mOuterRingProgress, lp);
         mArcImage.setVisibility(View.GONE); // 初始化的第一个进度是隐藏的
         mArcImage360.setVisibility(View.GONE); // 初始化的第一个进度360是隐藏的
