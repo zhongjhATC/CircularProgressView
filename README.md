@@ -1,3 +1,4 @@
 ## 快照
-![](https://github.com/zhongjhATC/AlbumCameraRecorder/blob/master/Demonstration.gif)
-![](https://github.com/zhongjhATC/AlbumCameraRecorder/blob/master/DemonstrationShowImg.png)
+都可通过代码进行改变
+![](https://github.com/zhongjhATC/CircularProgressView/tree/master/gif/1.gif)
+![](https://github.com/zhongjhATC/CircularProgressView/tree/master/gif/2.gif)
