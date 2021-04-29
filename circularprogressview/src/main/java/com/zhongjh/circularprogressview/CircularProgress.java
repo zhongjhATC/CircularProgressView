@@ -33,6 +33,11 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     public final static String TAG = CircularProgress.class.getSimpleName();
 
     /**
+     * 用于比较测量后是否不一样，如果不一样重新生成
+     */
+    private int mMeasuredWidth, mMeasuredHeight;
+
+    /**
      * 控件的直径，因为为了确保圆形形成能整个浏览，而这个值取宽高最小的为基准。
      */
     private int mDiameter = 0;
@@ -171,6 +176,9 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         Log.d(TAG, "getWidth:" + getWidth());
         Log.d(TAG, "getMeasuredWidth:" + getMeasuredWidth());
+        Log.d(TAG, "getMeasuredHeight:" + getMeasuredHeight());
+        Log.d(TAG, "widthMeasureSpec:" + widthMeasureSpec);
+        Log.d(TAG, "heightMeasureSpec:" + heightMeasureSpec);
         initAll();
     }
 
@@ -329,8 +337,11 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
      * 初始化所有
      */
     private void initAll() {
-        // 只new一次
-        if (getMeasuredWidth() > 0 && mRect == null) {
+        // 每次测量都重新绘制view
+        if (mMeasuredWidth != getMeasuredWidth() || mMeasuredHeight != getMeasuredHeight()) {
+            mMeasuredWidth = getMeasuredWidth();
+            mMeasuredHeight = getMeasuredHeight();
+            Log.d(TAG,"重新生成initAll");
             mDiameter = Math.min(getMeasuredWidth(), getMeasuredHeight());
             // 圆环的宽度
             float roundWidth = mStrokePaint.getStrokeWidth() * 2;
@@ -529,7 +540,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         initArcImage360();
         initDrawablePlay();
         initDrawableDone();
-
+        removeAllViews();
         addView(mFullCircleImage, lp);
         addView(mFillCircleImage, lp);
         addView(mArcImage, lp);
