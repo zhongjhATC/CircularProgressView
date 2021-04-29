@@ -2,11 +2,14 @@ package com.zhongjh.circularprogressview;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.View;
 
 /**
  * 外圈进度View
+ *
+ * @author zhongjh
  */
 public class OuterRingProgress extends View {
 
@@ -54,7 +57,8 @@ public class OuterRingProgress extends View {
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.STROKE);
         if (mCircularProgress.mIsFullStyle) {
-            mPaint.setColor(mCircularProgress.mColorFullProgress);
+            mPaint.setColor(mCircularProgress.mColorFullProgress == 0 ?
+                    Color.argb(127, 255, 0, 255) : mCircularProgress.mColorFullProgress);
             mPaint.setStrokeWidth(mCircularProgress.mStrokePaint.getStrokeWidth());
         } else {
             mPaint.setColor(mCircularProgress.mColorPrimary);
@@ -64,10 +68,11 @@ public class OuterRingProgress extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (mCircularProgress.mIsFullStyle)
+        if (mCircularProgress.mIsFullStyle) {
             canvas.drawArc(mCircularProgress.mRectFullStyle, mStartAngle, mSweepAngle, false, mPaint);
-        else
+        } else {
             canvas.drawArc(mCircularProgress.mRect, mStartAngle, mSweepAngle, false, mPaint);
+        }
     }
 
 }
