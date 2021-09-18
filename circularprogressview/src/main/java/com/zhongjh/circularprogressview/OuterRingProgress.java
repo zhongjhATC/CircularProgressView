@@ -17,6 +17,7 @@ public class OuterRingProgress extends View {
     public Paint mPaint;
     float mStartAngle = -90;
     float mSweepAngle;
+    public int mCurrentProgress = 0;
 
     public OuterRingProgress(Context context, CircularProgress circularProgress) {
         super(context);
@@ -26,8 +27,10 @@ public class OuterRingProgress extends View {
 
     /**
      * 设置当前进度
+     * @param progress 进度
      */
     public void setProgress(int progress) {
+        mCurrentProgress = progress;
         if (progress >= 100) {
             // 完成进度
             mCircularProgress.progressComplete();
@@ -35,6 +38,20 @@ public class OuterRingProgress extends View {
             mSweepAngle = (float) (progress * 3.6);
         }
         invalidate();
+    }
+
+    /**
+     * 添加进度
+     * @param progress 进度
+     */
+    public void addProgress(int progress) {
+        mCurrentProgress = mCurrentProgress + progress;
+        if (mCurrentProgress >= 100) {
+            // 完成进度
+            mCircularProgress.progressComplete();
+        } else {
+            mSweepAngle = (float) (mCurrentProgress * 3.6);
+        }
     }
 
     /**

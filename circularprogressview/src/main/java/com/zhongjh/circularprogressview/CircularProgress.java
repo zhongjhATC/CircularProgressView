@@ -268,6 +268,22 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     }
 
     /**
+     * 添加进度值
+     */
+    public void addProgress(Integer progress) {
+        if (mState == CircularProgressState.PLAY) {
+            mOuterRingProgress.addProgress(progress);
+        }
+    }
+
+    /**
+     * 获取当前进度值
+     */
+    public int getCurrentProgress() {
+        return mOuterRingProgress.mCurrentProgress;
+    }
+
+    /**
      * 重置
      */
     public void reset() {
@@ -341,7 +357,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         if (mMeasuredWidth != getMeasuredWidth() || mMeasuredHeight != getMeasuredHeight()) {
             mMeasuredWidth = getMeasuredWidth();
             mMeasuredHeight = getMeasuredHeight();
-            Log.d(TAG,"重新生成initAll");
+            Log.d(TAG, "重新生成initAll");
             mDiameter = Math.min(getMeasuredWidth(), getMeasuredHeight());
             // 圆环的宽度
             float roundWidth = mStrokePaint.getStrokeWidth() * 2;
