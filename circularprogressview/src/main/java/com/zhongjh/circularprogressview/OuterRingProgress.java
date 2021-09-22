@@ -52,6 +52,7 @@ public class OuterRingProgress extends View {
         } else {
             mSweepAngle = (float) (mCurrentProgress * 3.6);
         }
+        invalidate();
     }
 
     /**
