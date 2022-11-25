@@ -94,7 +94,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void stop() {
         // 这里写停止当前线程的操作
-        downLoadSigTask.cancel(true);
+        if (downLoadSigTask != null) {
+            downLoadSigTask.cancel(true);
+        }
         // 要自己告诉mCircularProgress重置，因为不知道自己停止当前线程要消耗多少时间
         mCircularProgress.reset();
     }
