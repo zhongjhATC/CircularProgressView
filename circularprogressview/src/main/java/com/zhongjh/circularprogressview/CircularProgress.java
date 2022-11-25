@@ -314,8 +314,8 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
      * 设置功能图片并且重置
      *
      * @param drawablePlay  播放图片
-     * @param avdPlayToStop 播放转换暂停的动画
-     * @param avdStopToPlay 暂停转换播放的动画
+     * @param avdPlayToStop 播放图片 转换成 暂停图片 的动画
+     * @param avdStopToPlay 暂停图片 转换成 播放图片 的动画
      */
     public void setFunctionImage(int drawablePlay, int avdPlayToStop, int avdStopToPlay) {
         mDrawablePlayId = drawablePlay;
@@ -461,7 +461,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         // 旋转动画
         mAnimatArcRotation.setAnimationListener(mAnimatArcRotationListener);
 
-        // 播放转换暂停动画
+        // 播放图片 转换成 暂停图片 的动画
         mAnimatPlayToStop.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
 
             @Override
@@ -690,10 +690,11 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     @Override
     public void onClick(View v) {
         if (mIsProgress) {
-            // 启动动画
+            // 进度模式下，启动动画
+            mCircularProgressListener.onClickByProgressMode();
             animation();
         } else {
-            mCircularProgressListener.onClick();
+            mCircularProgressListener.onClickByGeneralMode();
         }
     }
 

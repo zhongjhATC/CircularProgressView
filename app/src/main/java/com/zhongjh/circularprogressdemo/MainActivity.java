@@ -23,8 +23,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mCircularProgress = findViewById(R.id.circularProgress);
         findViewById(R.id.button).setOnClickListener(v -> {
-            if (downLoadSigTask != null)
+            if (downLoadSigTask != null) {
                 downLoadSigTask.cancel(true);
+            }
             mCircularProgress.reset();
         });
 
@@ -66,8 +67,13 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onClick() {
+            public void onClickByGeneralMode() {
                 Toast.makeText(MainActivity.this, "普通模式下触发", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onClickByProgressMode() {
+
             }
 
         });

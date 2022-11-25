@@ -1,5 +1,8 @@
 package com.zhongjh.circularprogressview;
 
+/**
+ * @author zhongjh
+ */
 public interface CircularProgressListener {
 
     /**
@@ -18,8 +21,13 @@ public interface CircularProgressListener {
     void onStop();
 
     /**
-     * 只有普通模式下才触发
+     * 普通按钮模式下的按钮点击事件，非进度模式才会触发
      */
-    void onClick();
+    void onClickByGeneralMode();
+
+    /**
+     * 进度模式下的按钮点击事件，比onStart事件还要早
+     */
+    void onClickByProgressMode();
 
 }
