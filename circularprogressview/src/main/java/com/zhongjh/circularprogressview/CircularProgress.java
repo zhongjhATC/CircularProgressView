@@ -185,6 +185,21 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     // region 公开API
 
     /**
+     * 清除动画，防止内存泄露
+     */
+    public void onDestroy() {
+        if (mAnimatArcRotation != null) {
+            mAnimatArcRotation.cancel();
+        }
+        if (mAnimatScaleShowDone != null) {
+            mAnimatScaleShowDone.cancel();
+        }
+        if (mAnimatShowDonw != null) {
+            mAnimatShowDonw.cancel();
+        }
+    }
+
+    /**
      * 设置是否进度模式
      *
      * @param isProgress 默认为true,如果为false则是一个普通的button

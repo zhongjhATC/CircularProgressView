@@ -51,29 +51,31 @@ public class MainActivity extends AppCompatActivity {
         mCircularProgress.setCircularProgressListener(new CircularProgressListener() {
             @Override
             public void onStart() {
-                Log.d(CircularProgress.TAG, "onStart");
+                Log.d(CircularProgress.TAG + "on", "onStart");
                 downLoadSigTask = new DownLoadSigTask();
                 downLoadSigTask.execute();
             }
 
             @Override
             public void onDone() {
-
+                Log.d(CircularProgress.TAG + "on", "onDone");
             }
 
             @Override
             public void onStop() {
+                Log.d(CircularProgress.TAG + "on", "onStop");
                 stop();
             }
 
             @Override
             public void onClickByGeneralMode() {
+                Log.d(CircularProgress.TAG + "on", "onClickByGeneralMode");
                 Toast.makeText(MainActivity.this, "普通模式下触发", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onClickByProgressMode() {
-
+                Log.d(CircularProgress.TAG + "on", "onClickByProgressMode");
             }
 
         });
