@@ -121,7 +121,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     /**
      * 外圈的旋转动画
      */
-    private RotateAnimation mAnimatArcRotation;
+    private RotateAnimation mAnimaArcRotation;
     /**
      * 转换动画的资源id
      */
@@ -129,19 +129,19 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     /**
      * 播放转换暂停的动画
      */
-    private AnimatedVectorDrawableCompat mAnimatPlayToStop;
+    private AnimatedVectorDrawableCompat mAnimaPlayToStop;
     /**
      * 暂停转换播放的动画
      */
-    private AnimatedVectorDrawableCompat mAnimatStopToPlay;
+    private AnimatedVectorDrawableCompat mAnimaStopToPlay;
     /**
      * 显示完成的动画
      */
-    private ScaleAnimation mAnimatScaleShowDone;
+    private ScaleAnimation mAnimaScaleShowDone;
     /**
      * 显示完成的动画合集
      */
-    private AnimationSet mAnimatShowDonw;
+    private AnimationSet mAnimaShowDown;
 
     /**
      * 事件
@@ -188,14 +188,25 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
      * 清除动画，防止内存泄露
      */
     public void onDestroy() {
-        if (mAnimatArcRotation != null) {
-            mAnimatArcRotation.cancel();
+        if (mAnimaArcRotation != null) {
+            mAnimaArcRotation.cancel();
         }
-        if (mAnimatScaleShowDone != null) {
-            mAnimatScaleShowDone.cancel();
+        if (mAnimaScaleShowDone != null) {
+            mAnimaScaleShowDone.cancel();
         }
-        if (mAnimatShowDonw != null) {
-            mAnimatShowDonw.cancel();
+        if (mAnimaShowDown != null) {
+            mAnimaShowDown.cancel();
+        }
+        if (mAnimaPlayToStop != null) {
+            mAnimaPlayToStop.stop();
+            mAnimaPlayToStop.unregisterAnimationCallback(mAnimaPlayToStopCallback);
+        }
+        if (mAnimaStopToPlay != null) {
+            mAnimaStopToPlay.stop();
+            mAnimaStopToPlay.unregisterAnimationCallback(mAnimaStopToPlayCallback);
+        }
+        if (mCircularProgressListener != null) {
+            mCircularProgressListener = null;
         }
     }
 
@@ -305,10 +316,10 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         Log.d(TAG, "reset");
         mOuterRingProgress.reset();
         mOuterRingProgress.setVisibility(View.GONE);
-        if (mFunctionButtonImage.getDrawable() == mAnimatPlayToStop) {
+        if (mFunctionButtonImage.getDrawable() == mAnimaPlayToStop) {
             // 轮到按钮开始动画
-            mFunctionButtonImage.setImageDrawable(mAnimatStopToPlay);
-            mAnimatStopToPlay.start();
+            mFunctionButtonImage.setImageDrawable(mAnimaStopToPlay);
+            mAnimaStopToPlay.start();
         } else {
             mFunctionButtonImage.setImageDrawable(mDrawablePlay);
         }
@@ -438,33 +449,33 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
      * 初始化动画
      */
     private void initAnimation() {
-        mAnimatArcRotation = new RotateAnimation(0.0f, 360.0f,
+        mAnimaArcRotation = new RotateAnimation(0.0f, 360.0f,
                 Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
                 0.5f);
-        mAnimatArcRotation.setDuration(300);
+        mAnimaArcRotation.setDuration(300);
 
-        mAnimatPlayToStop = AnimatedVectorDrawableCompat.create(getContext(), mAvdPlayToStopId);
-        mAnimatStopToPlay = AnimatedVectorDrawableCompat.create(getContext(), mAvdStopToPlayId);
+        mAnimaPlayToStop = AnimatedVectorDrawableCompat.create(getContext(), mAvdPlayToStopId);
+        mAnimaStopToPlay = AnimatedVectorDrawableCompat.create(getContext(), mAvdStopToPlayId);
 
-        mAnimatShowDonw = new AnimationSet(true);
+        mAnimaShowDown = new AnimationSet(true);
 
-        mAnimatShowDonw.setInterpolator(new AccelerateDecelerateInterpolator());
+        mAnimaShowDown.setInterpolator(new AccelerateDecelerateInterpolator());
 
         ScaleAnimation scaleIn = new ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f,
                 Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
                 0.5f);
-        mAnimatScaleShowDone = new ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f,
+        mAnimaScaleShowDone = new ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f,
                 Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
                 0.5f);
 
         AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
 
-        mAnimatScaleShowDone.setDuration(200);
+        mAnimaScaleShowDone.setDuration(200);
         scaleIn.setDuration(150);
         fadeIn.setDuration(150);
 
-        mAnimatShowDonw.addAnimation(scaleIn);
-        mAnimatShowDonw.addAnimation(fadeIn);
+        mAnimaShowDown.addAnimation(scaleIn);
+        mAnimaShowDown.addAnimation(fadeIn);
 
         initAnimationListener();
     }
@@ -474,39 +485,15 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
      */
     private void initAnimationListener() {
         // 旋转动画
-        mAnimatArcRotation.setAnimationListener(mAnimatArcRotationListener);
+        mAnimaArcRotation.setAnimationListener(mAnimaArcRotationListener);
 
         // 播放图片 转换成 暂停图片 的动画
-        mAnimatPlayToStop.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
+        mAnimaPlayToStop.registerAnimationCallback(mAnimaPlayToStopCallback);
 
-            @Override
-            public void onAnimationEnd(Drawable drawable) {
-                super.onAnimationEnd(drawable);
-                mState = CircularProgressState.PLAY;
-                if (mIsFullStyle) {
-                    // 如果是铺满模式，显示360的进度圈
-                    mArcImage360.setVisibility(View.VISIBLE);
-                }
-                // 隐藏第一个进度圈
-                mArcImage.setVisibility(View.GONE);
-                // 显示外圈
-                mFullCircleImage.setVisibility(View.VISIBLE);
-                // 显示第二个进度圈
-                mOuterRingProgress.setVisibility(View.VISIBLE);
-
-                mCircularProgressListener.onStart();
-            }
-        });
-
-        mAnimatStopToPlay.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
-            @Override
-            public void onAnimationStart(Drawable drawable) {
-                super.onAnimationStart(drawable);
-            }
-        });
+        mAnimaStopToPlay.registerAnimationCallback(mAnimaStopToPlayCallback);
 
         // 进度完成后，显示完成的动画,跳出一个勾图标
-        mAnimatScaleShowDone.setAnimationListener(new Animation.AnimationListener() {
+        mAnimaScaleShowDone.setAnimationListener(new Animation.AnimationListener() {
 
             @Override
             public void onAnimationStart(Animation animation) {
@@ -528,7 +515,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
                 mFunctionButtonImage.setVisibility(View.VISIBLE);
                 mFunctionButtonImage.setImageDrawable(mDrawableDone);
                 mFunctionButtonImage.setColorFilter(mColorPrimaryVariant);
-                mFunctionButtonImage.startAnimation(mAnimatShowDonw);
+                mFunctionButtonImage.startAnimation(mAnimaShowDown);
             }
         });
     }
@@ -536,7 +523,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
     /**
      * 旋转动画，单独抽出来是为了后来可以复用
      */
-    private final Animation.AnimationListener mAnimatArcRotationListener = new Animation.AnimationListener() {
+    private final Animation.AnimationListener mAnimaArcRotationListener = new Animation.AnimationListener() {
         @Override
         public void onAnimationStart(Animation animation) {
             // 开始了播放状态中
@@ -546,13 +533,41 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         @Override
         public void onAnimationEnd(Animation animation) {
             // 轮到按钮开始动画
-            mFunctionButtonImage.setImageDrawable(mAnimatPlayToStop);
-            mAnimatPlayToStop.start();
+            mFunctionButtonImage.setImageDrawable(mAnimaPlayToStop);
+            mAnimaPlayToStop.start();
         }
 
         @Override
         public void onAnimationRepeat(Animation animation) {
 
+        }
+    };
+
+    private final Animatable2Compat.AnimationCallback mAnimaPlayToStopCallback = new Animatable2Compat.AnimationCallback() {
+
+        @Override
+        public void onAnimationEnd(Drawable drawable) {
+            super.onAnimationEnd(drawable);
+            mState = CircularProgressState.PLAY;
+            if (mIsFullStyle) {
+                // 如果是铺满模式，显示360的进度圈
+                mArcImage360.setVisibility(View.VISIBLE);
+            }
+            // 隐藏第一个进度圈
+            mArcImage.setVisibility(View.GONE);
+            // 显示外圈
+            mFullCircleImage.setVisibility(View.VISIBLE);
+            // 显示第二个进度圈
+            mOuterRingProgress.setVisibility(View.VISIBLE);
+
+            mCircularProgressListener.onStart();
+        }
+    };
+
+    private final Animatable2Compat.AnimationCallback mAnimaStopToPlayCallback = new Animatable2Compat.AnimationCallback() {
+        @Override
+        public void onAnimationStart(Drawable drawable) {
+            super.onAnimationStart(drawable);
         }
     };
 
@@ -724,9 +739,9 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
                 mFullCircleImage.setVisibility(View.GONE);
             }
             mArcImage.setVisibility(View.VISIBLE);
-            mAnimatArcRotation.setAnimationListener(mAnimatArcRotationListener);
-            mAnimatArcRotation.setRepeatCount(0);
-            mArcImage.startAnimation(mAnimatArcRotation);
+            mAnimaArcRotation.setAnimationListener(mAnimaArcRotationListener);
+            mAnimaArcRotation.setRepeatCount(0);
+            mArcImage.startAnimation(mAnimaArcRotation);
         } else if (mState == CircularProgressState.PLAY) {
             Log.d(TAG, "stopin");
             mState = CircularProgressState.STOPIN;
@@ -740,9 +755,9 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
             // 显示第一个进度弧形
             mArcImage.setVisibility(View.VISIBLE);
             // 开始了动画
-            mAnimatArcRotation.setRepeatCount(Animation.INFINITE);
-            mAnimatArcRotation.setAnimationListener(null);
-            mArcImage.startAnimation(mAnimatArcRotation);
+            mAnimaArcRotation.setRepeatCount(Animation.INFINITE);
+            mAnimaArcRotation.setAnimationListener(null);
+            mArcImage.startAnimation(mAnimaArcRotation);
             // 触发停止请求
             mCircularProgressListener.onStop();
 
@@ -756,7 +771,7 @@ public class CircularProgress extends FrameLayout implements View.OnClickListene
         mFunctionButtonImage.setVisibility(View.GONE);
         mFillCircleImage.setVisibility(View.VISIBLE);
         // 开始了完成动画
-        mFillCircleImage.startAnimation(mAnimatScaleShowDone);
+        mFillCircleImage.startAnimation(mAnimaScaleShowDone);
     }
 
 }
